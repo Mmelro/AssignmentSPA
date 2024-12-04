@@ -34,7 +34,10 @@ Once the database is created, create the necessary tables by running the followi
 CREATE TABLE securities(ticker VARCHAR(10) PRIMARY KEY,security_name VARCHAR(255) NOT NULL,sector VARCHAR(100),country VARCHAR(100),trend NUMERIC(3, 2));
 CREATE TABLE prices (id SERIAL PRIMARY KEY,ticker VARCHAR(10) REFERENCES securities(ticker) ON DELETE CASCADE,date DATE NOT NULL,close_price NUMERIC(10, 2),volume BIGINT);
 
+
 Now, you just have to seed the database. run the seed.js script after creating the tables - on the project root folder, open the command prompt and run the following command:
 node backend/database/seed.js
 
 The server should start on http://localhost:3000
+
+ATTENTION: in assignment/backend/db.js, the following piece of code must be changed to meet your PostgresSQL database password (if it's not defined, you just have to type: "password: '',"  

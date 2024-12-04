@@ -1,13 +1,13 @@
-// backend/src/db.js
-const { Pool } = require('pg'); //connects to databaase using  pg
+const { Pool } = require('pg');
+require('dotenv').config(); // Load environment variables from .env
 
 // Create a connection pool
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'securities_db', 
-  password: '123',
-  port: 5432,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_DATABASE,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
 });
 
 // Test the connection
