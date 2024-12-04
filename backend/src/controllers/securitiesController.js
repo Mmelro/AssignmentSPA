@@ -1,12 +1,17 @@
  const pool = require('../db'); // Import database connection pool
 
 // Fetch all securities
-exports.getAllSecurities = async (req, res, next) => {
+exports.getAllSecurities = async (req, res, next) => { //Added date range for each security
   try {
     console.log('Fetching all securities...');
-    const result = await pool.query(
-      'SELECT ticker, security_name, sector, country, trend FROM securities'
-    );
+    const result = await pool.query(`
+      SELECT 
+        s.ticker, s.security_name, s.sector, s.country, s.trend, 
+        CONCAT(MIN(p.date), ' to ', MAX(p.date)) AS date_range 
+      FROM securities s
+      LEFT JOIN prices p ON s.ticker = p.ticker
+      GROUP BY s.ticker, s.security_name, s.sector, s.country, s.trend
+    `);
     console.log('Fetched securities:', result.rows.length);
     res.json(result.rows);
   } catch (err) {
