@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate
 import axios from 'axios';
 
 const SecurityDetails = () => {
-  const { ticker } = useParams(); // Correct use of useParams in a functional component
+  const { ticker } = useParams();
+  const navigate = useNavigate(); // Initialize navigate hook
   const [security, setSecurity] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -25,6 +26,10 @@ const SecurityDetails = () => {
   return (
     <div>
       <header>
+        {/* Back arrow */}
+        <div style={{ cursor: 'pointer', marginBottom: '1rem' }} onClick={() => navigate('/')}>
+          ← Back to Home
+        </div>
         <h1>{security.security.security_name} ({security.security.ticker})</h1>
       </header>
       <main>
@@ -36,7 +41,7 @@ const SecurityDetails = () => {
           <thead>
             <tr>
               <th>Date</th>
-              <th>Close Price</th>
+              <th>Close (Price)</th>
               <th>Volume</th>
             </tr>
           </thead>

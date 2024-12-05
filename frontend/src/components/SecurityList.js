@@ -5,13 +5,43 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 
 const HomePage = () => {
   const [securities, setSecurities] = useState([]);
+  const [sortedData, setSortedData] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null }); // State for sorting
   const navigate = useNavigate();
 
   useEffect(() => {
     axios.get('http://localhost:4000/api/securities')
-      .then(response => setSecurities(response.data))
+      .then(response => {
+        setSecurities(response.data);
+        setSortedData(response.data); // Initialize sorted data with the original data
+      })
       .catch(error => console.error('Error fetching securities:', error));
   }, []);
+
+  // Handle sorting logic
+  const handleSort = (key) => {
+    const { direction } = sortConfig;
+
+    let newDirection = 'asc';
+    if (sortConfig.key === key && direction === 'asc') {
+      newDirection = 'desc';
+    } else if (sortConfig.key === key && direction === 'desc') {
+      newDirection = null; // Reset to original state
+    }
+
+    setSortConfig({ key, direction: newDirection });
+
+    if (!newDirection) {
+      setSortedData([...securities]); // Reset to original state
+    } else {
+      const sorted = [...sortedData].sort((a, b) => {
+        if (a[key] < b[key]) return newDirection === 'asc' ? -1 : 1;
+        if (a[key] > b[key]) return newDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+      setSortedData(sorted);
+    }
+  };
 
   const getTrendColor = (trend) => {
     if (trend < -0.2) return 'red';
@@ -29,15 +59,25 @@ const HomePage = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Symbol</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Sector</TableCell>
-                <TableCell>Country</TableCell>
-                <TableCell>Trend</TableCell>
+                <TableCell onClick={() => handleSort('ticker')} style={{ cursor: 'pointer' }}>
+                  Symbol {sortConfig.key === 'ticker' && (sortConfig.direction === 'asc' ? '↑' : sortConfig.direction === 'desc' ? '↓' : '')}
+                </TableCell>
+                <TableCell onClick={() => handleSort('security_name')} style={{ cursor: 'pointer' }}>
+                  Name {sortConfig.key === 'security_name' && (sortConfig.direction === 'asc' ? '↑' : sortConfig.direction === 'desc' ? '↓' : '')}
+                </TableCell>
+                <TableCell onClick={() => handleSort('sector')} style={{ cursor: 'pointer' }}>
+                  Sector {sortConfig.key === 'sector' && (sortConfig.direction === 'asc' ? '↑' : sortConfig.direction === 'desc' ? '↓' : '')}
+                </TableCell>
+                <TableCell onClick={() => handleSort('country')} style={{ cursor: 'pointer' }}>
+                  Country {sortConfig.key === 'country' && (sortConfig.direction === 'asc' ? '↑' : sortConfig.direction === 'desc' ? '↓' : '')}
+                </TableCell>
+                <TableCell onClick={() => handleSort('trend')} style={{ cursor: 'pointer' }}>
+                  Trend {sortConfig.key === 'trend' && (sortConfig.direction === 'asc' ? '↑' : sortConfig.direction === 'desc' ? '↓' : '')}
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {securities.map((security) => (
+              {sortedData.map((security) => (
                 <TableRow
                   key={security.ticker}
                   hover
