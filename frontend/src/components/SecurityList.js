@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 
 const HomePage = () => {
   const [securities, setSecurities] = useState([]);
+  const navigate = useNavigate();
 
-  // Fetch data from backend
   useEffect(() => {
-    axios.get('http://localhost:4000/api/securities') // Update port to 4000
-  .then(response => setSecurities(response.data))
-  .catch(error => console.error('Error fetching securities:', error));
-
+    axios.get('http://localhost:4000/api/securities')
+      .then(response => setSecurities(response.data))
+      .catch(error => console.error('Error fetching securities:', error));
   }, []);
 
-  // Trend color helper function
   const getTrendColor = (trend) => {
     if (trend < -0.2) return 'red';
     if (trend >= -0.2 && trend <= 0.2) return 'green';
@@ -42,7 +41,7 @@ const HomePage = () => {
                 <TableRow
                   key={security.ticker}
                   hover
-                  onClick={() => window.location.href = `/securities/${security.ticker}`}
+                  onClick={() => navigate(`/securities/${security.ticker}`)}
                   style={{ cursor: 'pointer' }}
                 >
                   <TableCell>{security.ticker}</TableCell>

@@ -1,16 +1,17 @@
  const pool = require('../db'); // Import database connection pool
 
 // Fetch all securities
-exports.getAllSecurities = async (req, res, next) => { //Added date range for each security
+exports.getAllSecurities = async (req, res, next) => {
   try {
     console.log('Fetching all securities...');
     const result = await pool.query(`
       SELECT 
-        s.ticker, s.security_name, s.sector, s.country, s.trend, 
-        CONCAT(MIN(p.date), ' to ', MAX(p.date)) AS date_range 
+        s.ticker, 
+        s.security_name, 
+        s.sector, 
+        s.country, 
+        s.trend
       FROM securities s
-      LEFT JOIN prices p ON s.ticker = p.ticker
-      GROUP BY s.ticker, s.security_name, s.sector, s.country, s.trend
     `);
     console.log('Fetched securities:', result.rows.length);
     res.json(result.rows);
@@ -19,6 +20,7 @@ exports.getAllSecurities = async (req, res, next) => { //Added date range for ea
     next(err); // Pass error to the global error handler
   }
 };
+
 
 //Fetch a specific security and its prices
 exports.getSecurityDetails = async (req, res, next) => {
@@ -38,9 +40,17 @@ exports.getSecurityDetails = async (req, res, next) => {
       return res.status(404).send('Security not found');
     }
 
-    // Fetch the prices
-    const pricesResult = await pool.query(
-      'SELECT date, close_price, volume FROM prices WHERE ticker = $1 ORDER BY date DESC',
+    // Fetch the prices with formatted date
+    const pricesResult = await pool.query( // NOTE: the date format was changed. it was previously including hours, minutes, and seconds, but because the time was the same for all prices, i decided to take it off.
+      `
+      SELECT 
+        TO_CHAR(date, 'YYYY-MM-DD') AS date, 
+        close_price, 
+        volume 
+      FROM prices 
+      WHERE ticker = $1 
+      ORDER BY date DESC
+      `,
       [ticker]
     );
 
@@ -58,3 +68,4 @@ exports.getSecurityDetails = async (req, res, next) => {
     next(err); // Pass error to the global error handler
   }
 };
+
