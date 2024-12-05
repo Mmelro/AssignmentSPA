@@ -18,31 +18,34 @@ const HomePage = () => {
       .catch(error => console.error('Error fetching securities:', error));
   }, []);
 
-  // Handle sorting logic
+  //sorting logic
   const handleSort = (key) => {
     const { direction } = sortConfig;
-
+  
     let newDirection = 'asc';
     if (sortConfig.key === key && direction === 'asc') {
       newDirection = 'desc';
     } else if (sortConfig.key === key && direction === 'desc') {
       newDirection = null; // Reset to original state
     }
-
+  
     setSortConfig({ key, direction: newDirection });
-
+  
     if (!newDirection) {
       setSortedData([...securities]); // Reset to original state
     } else {
       const sorted = [...sortedData].sort((a, b) => {
-        if (a[key] < b[key]) return newDirection === 'asc' ? -1 : 1;
-        if (a[key] > b[key]) return newDirection === 'asc' ? 1 : -1;
+        const aValue = key === 'trend' ? parseFloat(a[key]) : a[key]; // Convert trend to number
+        const bValue = key === 'trend' ? parseFloat(b[key]) : b[key]; // Convert trend to number
+  
+        if (aValue < bValue) return newDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return newDirection === 'asc' ? 1 : -1;
         return 0;
       });
       setSortedData(sorted);
     }
   };
-
+  
   const getTrendColor = (trend) => {
     if (trend < -0.2) return 'red';
     if (trend >= -0.2 && trend <= 0.2) return 'green';
