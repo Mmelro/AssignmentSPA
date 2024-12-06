@@ -12,6 +12,7 @@ const getAllSecurities = async () => {
         trend
       FROM securities
     `);
+  
     return result.rows;
   } catch (err) {
     throw new Error('Error fetching all securities: ' + err.message);

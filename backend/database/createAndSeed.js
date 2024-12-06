@@ -26,14 +26,17 @@ const initDB = async () => {
   let dbPool; // Connection to `securities_db`
 
   try {
+    console.log('Attempting to create `securities_db`...');
     //Create `securities_db`
     await pool.query('CREATE DATABASE securities_db');
     console.log('Database created successfully.');
 
     //Connect to `securities_db`
     dbPool = new Pool(securitiesDbConfig);
+    console.log('Connected to `securities_db`.');
 
     //Create tables
+    console.log('Creating tables...');
     await dbPool.query(`
       CREATE TABLE securities (
         ticker VARCHAR(10) PRIMARY KEY,
@@ -53,6 +56,7 @@ const initDB = async () => {
     console.log('Tables created successfully.');
 
     //Seed data
+    
     for (const item of data) {
       const { ticker, securityName, sector, country, trend, prices } = item;
 

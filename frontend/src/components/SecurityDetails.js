@@ -2,7 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { Container, TablePagination } from '@mui/material';
+import {
+  Container,
+  TablePagination,
+  Button,
+  Typography,
+  Box,
+} from '@mui/material';
 import axios from 'axios';
 
 const SecurityDetails = () => {
@@ -112,70 +118,88 @@ const SecurityDetails = () => {
   if (!security) return <div>Security not found</div>;
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <header>
-        <div
-          style={{ cursor: 'pointer', marginBottom: '1rem', color: '#007bff' }}
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
+      {/* Back to Home Button */}
+      <Box sx={{ mb: 3 }}>
+        <Button
+          variant="contained"
+          color="primary"
           onClick={() => navigate('/')}
+          sx={{ fontWeight: 'bold' }}
         >
-          ← Back to Home
-        </div>
-        <h1>{security.security.security_name} ({security.security.ticker})</h1>
-      </header>
-      <main>
-        <p><strong>Sector:</strong> {security.security.sector}</p>
-        <p><strong>Country:</strong> {security.security.country}</p>
+          Back to Home
+        </Button>
+      </Box>
 
-        {/* Chart */}
-        <HighchartsReact highcharts={Highcharts} options={chartOptions} />
+      {/* Security Details */}
+      <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold', color: '#333', mb: 2 }}>
+        {security.security.security_name} ({security.security.ticker})
+      </Typography>
+      <hr style={{ border: '1px solid #ccc', marginBottom: '20px' }} />
 
-{/* Price History Table */}
-<h2>Price History</h2>
-        <table style={{ width: '100%', textAlign: 'center', marginTop: '1rem', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th
-                onClick={() => handleSort('date')}
-                style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd' }}
-              >
-                Date {getSortIndicator('date')}
-              </th>
-              <th
-                onClick={() => handleSort('close_price')}
-                style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd' }}
-              >
-                Close (price) {getSortIndicator('close_price')}
-              </th>
-              <th
-                onClick={() => handleSort('volume')}
-                style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd' }}
-              >
-                Volume {getSortIndicator('volume')}
-              </th>
+      <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+        <strong>Sector: </strong>
+        <span style={{ fontWeight: 'normal', color: '#555' }}>{security.security.sector}</span>
+      </Typography>
+
+      <Typography variant="h6" gutterBottom>
+        <strong>Country: </strong>
+        <span style={{ fontWeight: 'normal', color: '#555' }}>
+          {security.security.country}
+        </span>
+      </Typography>
+
+      {/* Chart */}
+      <HighchartsReact highcharts={Highcharts} options={chartOptions} />
+
+      {/* Price History Table */}
+      <Typography variant="h5" sx={{ mt: 4 }}>
+        Price History
+      </Typography>
+      <table style={{ width: '100%', textAlign: 'center', marginTop: '1rem', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            <th
+              onClick={() => handleSort('date')}
+              style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd' }}
+            >
+              Date {getSortIndicator('date')}
+            </th>
+            <th
+              onClick={() => handleSort('close_price')}
+              style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd' }}
+            >
+              Close (price) {getSortIndicator('close_price')}
+            </th>
+            <th
+              onClick={() => handleSort('volume')}
+              style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd' }}
+            >
+              Volume {getSortIndicator('volume')}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedData.map((price, index) => (
+            <tr key={index}>
+              <td>{price.date}</td>
+              <td>{price.close_price}</td>
+              <td>{price.volume}</td>
             </tr>
-          </thead>
-          <tbody>
-            {paginatedData.map((price, index) => (
-              <tr key={index}>
-                <td>{price.date}</td>
-                <td>{price.close_price}</td>
-                <td>{price.volume}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          ))}
+        </tbody>
+      </table>
 
-        {/* Pagination */}
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={sortedData.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </main>
+      {/* Pagination */}
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={sortedData.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
     </Container>
   );
 };

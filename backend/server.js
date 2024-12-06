@@ -13,6 +13,6 @@ app.use('/api', securitiesRoutes); // Mount the routes under the `/api` path
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server initialized. Listening on port ${port}`);
   console.log('Routes registered under /api');
 });

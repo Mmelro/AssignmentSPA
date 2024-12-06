@@ -105,18 +105,26 @@ const HomePage = () => {
     setRowsPerPage(value === 'All Securities' ? filteredData.length : parseInt(value, 10));
     setPage(0); // Reset to first page
   };
-  const paginatedData = rowsPerPage === filteredData.length
-    ? filteredData
-    : filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const paginatedData =
+    rowsPerPage === filteredData.length
+      ? filteredData
+      : filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   // Trend Display Toggle
   const toggleTrendDisplay = () => setIsPercentage(!isPercentage);
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Typography variant="h4" align="center" gutterBottom>
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Typography
+        variant="h4"
+        align="center"
+        gutterBottom
+        sx={{ fontWeight: 'bold', color: '#333', mb: 2 }}
+      >
         Security List
       </Typography>
+      <hr style={{ border: '1px solid #ccc', marginBottom: '20px' }} />
 
       {/* Search Bar */}
       <TextField

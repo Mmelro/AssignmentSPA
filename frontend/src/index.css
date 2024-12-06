@@ -5,40 +5,46 @@
   box-sizing: border-box;
 }
 
-/* Set the body background and padding */
+/* body background and padding */
 body {
   font-family: Arial, sans-serif;
   background-color: #f4f4f4;
   padding: 20px;
 }
 
-/* Apply header styles */
+/* header styles */
 header {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem; /* Increased bottom margin */
 }
 
-/* Apply a consistent margin to main content */
+/* consistent margin */
 main {
   margin: 2rem auto;
+  max-width: 1200px; /* Increased the max width of the main container */
 }
 
 /* Table styles */
 table {
-  width: 100%;
-  margin-top: 1rem;
+  width: 90%; /* Changed width from 100% to 90% for better control */
+  margin-top: 2rem; /* Increased margin for spacing */
   text-align: center;
   border-collapse: collapse;
+  margin-left: auto; /* Center the table horizontally */
+  margin-right: auto;
 }
 
 th, td {
-  padding: 12px;
+  padding: 16px; /* Increased padding to make table cells larger */
   border: 1px solid #ddd;
+  
 }
 
-/* Styling for table header */
+/*  table header */
 th {
   background-color: #f2f2f2;
+  font-weight: bold; /* Added bold font for header text */
+  
 }
 
 /* Ensure buttons and clickable elements have space around them */
@@ -46,19 +52,33 @@ button, a {
   margin-top: 1rem;
 }
 
+/* Typography for general headers */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: bold;
+  color: #333;
+}
+
+/* Typography for the body content */
+p, span {
+  font-weight: normal;
+  color: #555;
+  
+}
+
 /* Responsive styling for smaller screens */
 @media (max-width: 768px) {
   body {
     padding: 10px;
+    
   }
 
   table {
     font-size: 14px;
+    width: 100%; /* Full width on smaller screens */
+    
   }
 }
 
-
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }

@@ -6,9 +6,10 @@ exports.getAllSecurities = async (req, res, next) => {
   try {
     const securities = await securityModel.getAllSecurities();
     res.json(securities);
+    
   } catch (err) {
     console.error(err);
-    next(err); // Pass error to the global error handler
+    next(err); 
   }
 };
 
