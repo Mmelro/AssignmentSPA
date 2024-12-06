@@ -14,7 +14,12 @@ import {
   TablePagination,
   Button,
   TextField,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
+
+
 
 const HomePage = () => {
   const [securities, setSecurities] = useState([]);
@@ -25,6 +30,8 @@ const HomePage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const [baseData, setBaseData] = useState([]); // Base data for current search results
+
 
   useEffect(() => {
     axios.get('http://localhost:4000/api/securities')
@@ -46,13 +53,23 @@ const HomePage = () => {
       )
     );
 
-    setFilteredData(filtered);
-    setSortConfig({ key: null, direction: null }); // Reset sorting on new search
+    setBaseData(filtered); // Update the base data for search
+    setFilteredData(filtered); // Update the working data
+    setSortConfig({ key: null, direction: null }); // Reset sorting
     setPage(0); // Reset pagination to the first page
   };
 
+  const clearSearch = () => {
+    setSearchQuery('');
+    setBaseData(securities);
+    setFilteredData(securities);
+    setSortConfig({ key: null, direction: null });
+    setPage(0);
+  };
+  
+
   // Sorting Logic
-  const handleSort = (key) => {
+ const handleSort = (key) => {
     const { direction } = sortConfig;
     let newDirection = 'asc';
 
@@ -65,7 +82,7 @@ const HomePage = () => {
     setSortConfig({ key, direction: newDirection });
 
     if (!newDirection) {
-      setFilteredData([...securities]); // Reset to original order
+      setFilteredData([...baseData]); // Reset to current base data
     } else {
       const sorted = [...filteredData].sort((a, b) => {
         const aValue = key === 'trend' ? parseFloat(a[key]) : a[key];
@@ -84,7 +101,7 @@ const HomePage = () => {
       setFilteredData(sorted);
     }
   };
-
+  
   const getSortIndicator = (key) => {
     if (sortConfig.key === key) {
       return sortConfig.direction === 'asc' ? '↑' : sortConfig.direction === 'desc' ? '↓' : '';
@@ -128,13 +145,23 @@ const HomePage = () => {
 
       {/* Search Bar */}
       <TextField
-        label="Search"
-        variant="outlined"
-        fullWidth
-        value={searchQuery}
-        onChange={handleSearchChange}
-        sx={{ mb: 3 }}
-      />
+      label="Search"
+      variant="outlined"
+      fullWidth
+      value={searchQuery}
+      onChange={handleSearchChange}
+      sx={{ mb: 3 }}
+      InputProps={{
+        endAdornment: (
+          <InputAdornment position="end">
+            <IconButton onClick={clearSearch} edge="end" aria-label="clear search">
+              <ClearIcon />
+            </IconButton>
+          </InputAdornment>
+        ),
+      }}
+    />
+
 
       <TableContainer component={Paper} sx={{ boxShadow: 3, borderRadius: 2 }}>
         <Table>
