@@ -21,23 +21,12 @@ npm install
 
 
 DATABASE
+run the createAndSeed.js script on the project root folder, open the command prompt and run the following command:
+node backend/database/createAndSeed.js
 
-Access PostgreSQL by running the following command in your SQL shell:
-psql -U postgres -h 127.0.0.1 -W
+Now, to run the server, in your project root folder, run the following command on the shell:
+node backend/server.js
 
-This will prompt you for your PostgreSQL password.
-
-Create the database: Run the following SQL command to create the securities_db database:
-CREATE DATABASE securities_db;
-
-Once the database is created, create the necessary tables by running the following SQL commands in PostgreSQL:
-CREATE TABLE securities(ticker VARCHAR(10) PRIMARY KEY,security_name VARCHAR(255) NOT NULL,sector VARCHAR(100),country VARCHAR(100),trend NUMERIC(3, 2));
-CREATE TABLE prices (id SERIAL PRIMARY KEY,ticker VARCHAR(10) REFERENCES securities(ticker) ON DELETE CASCADE,date DATE NOT NULL,close_price NUMERIC(10, 2),volume BIGINT);
-
-
-Now, you just have to seed the database. run the seed.js script after creating the tables - on the project root folder, open the command prompt and run the following command:
-node backend/database/seed.js
-
-The server should start on http://localhost:3000
+The server should start on http://localhost:4000
 
 ATTENTION: in assignment/backend/db.js, the following piece of code must be changed to meet your PostgresSQL database password (if it's not defined, you just have to type: "password: '',"  

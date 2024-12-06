@@ -6,6 +6,7 @@ import { Container, TablePagination } from '@mui/material';
 import axios from 'axios';
 
 const SecurityDetails = () => {
+  // --- State Management ---
   const { ticker } = useParams();
   const navigate = useNavigate();
   const [security, setSecurity] = useState(null);
@@ -13,50 +14,41 @@ const SecurityDetails = () => {
   const [priceData, setPriceData] = useState([]);
   const [volumeData, setVolumeData] = useState([]);
   const [sortedData, setSortedData] = useState([]);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: null }); // Sorting state
-
-  // Pagination state
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5); // Default rows per page
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
+  // --- API Calls ---
   useEffect(() => {
     axios.get(`http://localhost:4000/api/securities/${ticker}`)
-      .then(response => {
-        setSecurity(response.data);
+      .then(({ data }) => {
+        setSecurity(data);
+        setPriceData(data.prices.map(({ date, close_price }) => ({
+          x: new Date(date).getTime(),
+          y: parseFloat(close_price),
+        })));
+        setVolumeData(data.prices.map(({ date, volume }) => ({
+          x: new Date(date).getTime(),
+          y: parseFloat(volume),
+        })));
+        setSortedData(data.prices);
         setLoading(false);
-
-        // Prepare Price and Volume data for the chart
-        const prices = response.data.prices.map(price => ({
-          x: new Date(price.date).getTime(),
-          y: parseFloat(price.close_price),
-        }));
-
-        const volumes = response.data.prices.map(price => ({
-          x: new Date(price.date).getTime(),
-          y: parseFloat(price.volume),
-        }));
-
-        setPriceData(prices);
-        setVolumeData(volumes);
-
-        // Initialize sorted data for the table
-        setSortedData(response.data.prices);
       })
-      .catch(error => {
-        console.error('Error fetching security details:', error);
+      .catch((err) => {
+        console.error('Error fetching security details:', err);
         setLoading(false);
       });
   }, [ticker]);
 
-  // Sorting logic
+  // --- Sorting Logic ---
   const handleSort = (key) => {
     const { direction } = sortConfig;
-
     let newDirection = 'asc';
+
     if (sortConfig.key === key && direction === 'asc') {
       newDirection = 'desc';
     } else if (sortConfig.key === key && direction === 'desc') {
-      newDirection = null; // Reset to original state
+      newDirection = null; // Reset sorting
     }
 
     setSortConfig({ key, direction: newDirection });
@@ -67,102 +59,65 @@ const SecurityDetails = () => {
       const sorted = [...sortedData].sort((a, b) => {
         const aValue = key === 'close_price' || key === 'volume' ? parseFloat(a[key]) : new Date(a[key]);
         const bValue = key === 'close_price' || key === 'volume' ? parseFloat(b[key]) : new Date(b[key]);
-
-        if (aValue < bValue) return newDirection === 'asc' ? -1 : 1;
-        if (aValue > bValue) return newDirection === 'asc' ? 1 : -1;
-        return 0;
+        return newDirection === 'asc' ? aValue - bValue : bValue - aValue;
       });
       setSortedData(sorted);
     }
   };
 
-  // Handle page change
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+  const getSortIndicator = (key) => {
+    if (sortConfig.key === key) {
+      return sortConfig.direction === 'asc' ? '↑' : sortConfig.direction === 'desc' ? '↓' : '';
+    }
+    return '';
   };
 
-  // Handle rows per page change
+  // --- Pagination Logic ---
+  const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0); // Reset to first page
   };
+  const paginatedData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  // --- Chart Configuration ---
   const chartOptions = {
-    chart: {
-      type: 'line',
-    },
-    title: {
-      text: `Price and Volume Over Time for ${security?.security?.security_name || 'the Selected Security'}`,
-    },
-    xAxis: {
-      title: {
-        text: 'Date',
-      },
-      type: 'datetime',
-    },
+    chart: { type: 'line' },
+    title: { text: `Price and Volume Over Time for ${security?.security?.security_name || ''}` },
+    xAxis: { title: { text: 'Date' }, type: 'datetime' },
     yAxis: [
-      {
-        title: {
-          text: 'Price',
-        },
-        opposite: false,
-      },
-      {
-        title: {
-          text: 'Volume',
-        },
-        opposite: true,
-      },
+      { title: { text: 'Price' } },
+      { title: { text: 'Volume' }, opposite: true },
+    ],
+    series: [
+      { name: 'Price', data: priceData, color: '#FF5733', marker: { enabled: false } },
+      { name: 'Volume', data: volumeData, color: '#33B5FF', yAxis: 1, marker: { enabled: false } },
     ],
     tooltip: {
       shared: true,
       formatter: function () {
-        const priceTooltip = this.points.find(p => p.series.name === 'Price');
-        const volumeTooltip = this.points.find(p => p.series.name === 'Volume');
+        const pricePoint = this.points.find(p => p.series.name === 'Price');
+        const volumePoint = this.points.find(p => p.series.name === 'Volume');
         return `
           <b>Date:</b> ${new Date(this.x).toLocaleDateString()}<br/>
-          ${priceTooltip ? `<b>Price:</b> ${priceTooltip.y.toFixed(2)}<br/>` : ''}
-          ${volumeTooltip ? `<b>Volume:</b> ${volumeTooltip.y.toFixed(0)}<br/>` : ''}
+          ${pricePoint ? `<b>Price:</b> ${pricePoint.y.toFixed(2)}<br/>` : ''}
+          ${volumePoint ? `<b>Volume:</b> ${volumePoint.y.toFixed(0)}<br/>` : ''}
         `;
-      }
-    },
-    legend: {
-      layout: 'horizontal',
-      align: 'center',
-      verticalAlign: 'bottom',
-    },
-    series: [
-      {
-        name: 'Price',
-        data: priceData,
-        color: '#FF5733',
-        yAxis: 0,
-        marker: {
-          enabled: false,
-        },
       },
-      {
-        name: 'Volume',
-        data: volumeData,
-        color: '#33B5FF',
-        yAxis: 1,
-        marker: {
-          enabled: false,
-        },
-      },
-    ]
+    },
   };
 
+  // --- Rendering ---
   if (loading) return <div>Loading...</div>;
   if (!security) return <div>Security not found</div>;
 
-  // Paginate the sorted data
-  const paginatedData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-
   return (
-    <Container maxWidth="md" style={{ marginTop: '2rem' }}>
+    <Container maxWidth="md" sx={{ mt: 4 }}>
       <header>
-        <div style={{ cursor: 'pointer', marginBottom: '1rem' }} onClick={() => navigate('/')}>
+        <div
+          style={{ cursor: 'pointer', marginBottom: '1rem', color: '#007bff' }}
+          onClick={() => navigate('/')}
+        >
           ← Back to Home
         </div>
         <h1>{security.security.security_name} ({security.security.ticker})</h1>
@@ -171,25 +126,31 @@ const SecurityDetails = () => {
         <p><strong>Sector:</strong> {security.security.sector}</p>
         <p><strong>Country:</strong> {security.security.country}</p>
 
-        <h2>Price and Volume Over Time Chart</h2>
-        {priceData.length > 0 && volumeData.length > 0 ? (
-          <HighchartsReact highcharts={Highcharts} options={chartOptions} />
-        ) : (
-          <p>No data available for chart.</p>
-        )}
+        {/* Chart */}
+        <HighchartsReact highcharts={Highcharts} options={chartOptions} />
 
-        <h2>Price History Table</h2>
-        <table border="1" style={{ width: '100%', textAlign: 'center', marginTop: '1rem' }}>
+{/* Price History Table */}
+<h2>Price History</h2>
+        <table style={{ width: '100%', textAlign: 'center', marginTop: '1rem', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
-              <th onClick={() => handleSort('date')} style={{ cursor: 'pointer' }}>
-                Date {sortConfig.key === 'date' && (sortConfig.direction === 'asc' ? '↑' : sortConfig.direction === 'desc' ? '↓' : '')}
+              <th
+                onClick={() => handleSort('date')}
+                style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd' }}
+              >
+                Date {getSortIndicator('date')}
               </th>
-              <th onClick={() => handleSort('close_price')} style={{ cursor: 'pointer' }}>
-                Close Price {sortConfig.key === 'close_price' && (sortConfig.direction === 'asc' ? '↑' : sortConfig.direction === 'desc' ? '↓' : '')}
+              <th
+                onClick={() => handleSort('close_price')}
+                style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd' }}
+              >
+                Close (price) {getSortIndicator('close_price')}
               </th>
-              <th onClick={() => handleSort('volume')} style={{ cursor: 'pointer' }}>
-                Volume {sortConfig.key === 'volume' && (sortConfig.direction === 'asc' ? '↑' : sortConfig.direction === 'desc' ? '↓' : '')}
+              <th
+                onClick={() => handleSort('volume')}
+                style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd' }}
+              >
+                Volume {getSortIndicator('volume')}
               </th>
             </tr>
           </thead>
@@ -204,10 +165,11 @@ const SecurityDetails = () => {
           </tbody>
         </table>
 
+        {/* Pagination */}
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]} // Rows per page options
+          rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={sortedData.length} // Total number of rows
+          count={sortedData.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

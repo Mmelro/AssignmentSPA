@@ -11,7 +11,7 @@ const postgresConfig = {
   port: process.env.DB_PORT,
 };
 
-const testDbConfig = {
+const securitiesDbConfig = {
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: 'securities_db', // New database
@@ -22,16 +22,16 @@ const testDbConfig = {
 const data = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'data.json')));
 
 const initDB = async () => {
-  const pool = new Pool(postgresConfig); // Pool for the default database
-  let dbPool; // Pool for the new database
+  const pool = new Pool(postgresConfig); // Connection to `postgres` for creating database
+  let dbPool; // Connection to `securities_db`
 
   try {
-    // Step 1: Create the test database
+    // Step 1: Create `securities_db`
     await pool.query('CREATE DATABASE securities_db');
     console.log('Database created successfully.');
 
-    // Step 2: Connect to the new database
-    dbPool = new Pool(testDbConfig);
+    // Step 2: Connect to `securities_db`
+    dbPool = new Pool(securitiesDbConfig);
 
     // Step 3: Create tables
     await dbPool.query(`
@@ -56,13 +56,13 @@ const initDB = async () => {
     for (const item of data) {
       const { ticker, securityName, sector, country, trend, prices } = item;
 
-      // Insert into securities table
+      // Insert into `securities` table
       await dbPool.query(
         'INSERT INTO securities (ticker, security_name, sector, country, trend) VALUES ($1, $2, $3, $4, $5)',
         [ticker, securityName, sector, country, trend]
       );
 
-      // Insert into prices table
+      // Insert into `prices` table
       for (const price of prices) {
         const { date, close, volume } = price;
         await dbPool.query(
@@ -71,16 +71,13 @@ const initDB = async () => {
         );
       }
     }
-
     console.log('Database seeded successfully.');
   } catch (error) {
     console.error('Error initializing the database:', error);
   } finally {
-    // Close all connections
-    await pool.end(); // Close the connection to the default database
-    if (dbPool) {
-      await dbPool.end(); // Close the connection to the test database
-    }
+    // Step 5: Close connections
+    await pool.end(); // Close `postgres` connection
+    if (dbPool) await dbPool.end(); // Close `securities_db` connection
   }
 };
 
