@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 
 const HomePage = () => {
-  // --- State Management ---
+  // State Management 
   const [securities, setSecurities] = useState([]);
   const [sortedData, setSortedData] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
@@ -26,7 +26,7 @@ const HomePage = () => {
 
   const navigate = useNavigate();
 
-  // --- API Calls ---
+  // API Calls 
   useEffect(() => {
     axios.get('http://localhost:4000/api/securities')
       .then(({ data }) => {
@@ -36,7 +36,7 @@ const HomePage = () => {
       .catch((err) => console.error('Error fetching securities:', err));
   }, []);
 
-  // --- Sorting Logic ---
+  // Sorting Logic
   const handleSort = (key) => {
     const { direction } = sortConfig;
     let newDirection = 'asc';
@@ -78,12 +78,12 @@ const HomePage = () => {
   };
 
   const getTrendColor = (trend) => {
-    if (trend < -0.2) return '#ffcccc'; // Light red
-    if (trend >= -0.2 && trend <= 0.2) return '#ccffcc'; // Light green
-    return '#cce5ff'; // Light blue
+    if (trend < -0.2) return '#ffcccc'; 
+    if (trend >= -0.2 && trend <= 0.2) return '#ccffcc'; 
+    return '#cce5ff'; 
   };
 
-  // --- Pagination Logic ---
+  // Pagination Logic
   const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
     const value = event.target.value;
@@ -94,10 +94,10 @@ const HomePage = () => {
     ? sortedData
     : sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  // --- Trend Display Toggle ---
+  // Trend Display Toggle
   const toggleTrendDisplay = () => setIsPercentage(!isPercentage);
 
-  // --- Rendering ---
+  // Rendering
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h4" align="center" gutterBottom>
@@ -113,7 +113,7 @@ const HomePage = () => {
                   fontWeight: 'bold',
                   cursor: 'pointer',
                   backgroundColor: '#f2f2f2',
-                  color: '#6a0dad', // Soft purple for header
+                  color: '#6a0dad', 
                 }}
               >
                 Symbol {getSortIndicator('ticker')}
@@ -181,7 +181,7 @@ const HomePage = () => {
               >
                 <TableCell
                   sx={{
-                    color: '#6a0dad', // Soft purple for ticker column elements
+                    color: '#6a0dad', 
                     fontWeight: 'bold',
                   }}
                 >
@@ -194,7 +194,7 @@ const HomePage = () => {
                   sx={{
                     backgroundColor: getTrendColor(security.trend),
                     textAlign: 'center',
-                    fontWeight: 'bold', // Bold trend values
+                    fontWeight: 'bold', 
                   }}
                 >
                   {isPercentage

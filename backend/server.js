@@ -6,8 +6,6 @@ const port = 4000;
 const securitiesRoutes = require('./src/routes/securitiesRoutes'); // Import the routes
 
 app.use(cors());
-
-// Middleware to parse JSON
 app.use(express.json());
 
 // Register routes

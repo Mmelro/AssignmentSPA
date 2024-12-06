@@ -6,7 +6,7 @@ import { Container, TablePagination } from '@mui/material';
 import axios from 'axios';
 
 const SecurityDetails = () => {
-  // --- State Management ---
+  // State Management
   const { ticker } = useParams();
   const navigate = useNavigate();
   const [security, setSecurity] = useState(null);
@@ -18,7 +18,7 @@ const SecurityDetails = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  // --- API Calls ---
+  // API Calls
   useEffect(() => {
     axios.get(`http://localhost:4000/api/securities/${ticker}`)
       .then(({ data }) => {
@@ -40,7 +40,7 @@ const SecurityDetails = () => {
       });
   }, [ticker]);
 
-  // --- Sorting Logic ---
+  // Sorting Logic
   const handleSort = (key) => {
     const { direction } = sortConfig;
     let newDirection = 'asc';
@@ -72,7 +72,7 @@ const SecurityDetails = () => {
     return '';
   };
 
-  // --- Pagination Logic ---
+  // Pagination Logic
   const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
@@ -80,7 +80,7 @@ const SecurityDetails = () => {
   };
   const paginatedData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  // --- Chart Configuration ---
+  // Chart Configuration 
   const chartOptions = {
     chart: { type: 'line' },
     title: { text: `Price and Volume Over Time for ${security?.security?.security_name || ''}` },
@@ -107,7 +107,7 @@ const SecurityDetails = () => {
     },
   };
 
-  // --- Rendering ---
+  // Rendering
   if (loading) return <div>Loading...</div>;
   if (!security) return <div>Security not found</div>;
 

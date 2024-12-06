@@ -32,6 +32,6 @@ exports.getSecurityDetails = async (req, res, next) => {
     res.json(securityDetail);
   } catch (err) {
     console.error(err);
-    next(err); // Pass error to the global error handler
+    next(err); 
   }
 };

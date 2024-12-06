@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const securitiesController = require('../controllers/securitiesController'); // Import the controller
+const securitiesController = require('../controllers/securitiesController'); 
 
 // Route to get all securities
 router.get('/securities', securitiesController.getAllSecurities);
