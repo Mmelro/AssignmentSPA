@@ -13,28 +13,43 @@ import {
   Container,
   TablePagination,
   Button,
+  TextField,
 } from '@mui/material';
 
 const HomePage = () => {
-  // State Management 
   const [securities, setSecurities] = useState([]);
-  const [sortedData, setSortedData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]); // Filtered data for search
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
   const [isPercentage, setIsPercentage] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
-  // API Calls 
   useEffect(() => {
     axios.get('http://localhost:4000/api/securities')
       .then(({ data }) => {
         setSecurities(data);
-        setSortedData(data);
+        setFilteredData(data); // Initialize filtered data
       })
       .catch((err) => console.error('Error fetching securities:', err));
   }, []);
+
+  // Handle search query change
+  const handleSearchChange = (event) => {
+    const query = event.target.value.toLowerCase();
+    setSearchQuery(query);
+
+    const filtered = securities.filter((security) =>
+      Object.values(security).some((value) =>
+        value.toString().toLowerCase().includes(query)
+      )
+    );
+
+    setFilteredData(filtered);
+    setSortConfig({ key: null, direction: null }); // Reset sorting on new search
+    setPage(0); // Reset pagination to the first page
+  };
 
   // Sorting Logic
   const handleSort = (key) => {
@@ -50,9 +65,9 @@ const HomePage = () => {
     setSortConfig({ key, direction: newDirection });
 
     if (!newDirection) {
-      setSortedData([...securities]); // Reset to original order
+      setFilteredData([...securities]); // Reset to original order
     } else {
-      const sorted = [...sortedData].sort((a, b) => {
+      const sorted = [...filteredData].sort((a, b) => {
         const aValue = key === 'trend' ? parseFloat(a[key]) : a[key];
         const bValue = key === 'trend' ? parseFloat(b[key]) : b[key];
 
@@ -66,7 +81,7 @@ const HomePage = () => {
         // Numeric and date comparison
         return newDirection === 'asc' ? aValue - bValue : bValue - aValue;
       });
-      setSortedData(sorted);
+      setFilteredData(sorted);
     }
   };
 
@@ -78,31 +93,41 @@ const HomePage = () => {
   };
 
   const getTrendColor = (trend) => {
-    if (trend < -0.2) return '#ffcccc'; 
-    if (trend >= -0.2 && trend <= 0.2) return '#ccffcc'; 
-    return '#cce5ff'; 
+    if (trend < -0.2) return '#ffcccc';
+    if (trend >= -0.2 && trend <= 0.2) return '#ccffcc';
+    return '#cce5ff';
   };
 
   // Pagination Logic
   const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
     const value = event.target.value;
-    setRowsPerPage(value === 'All Securities' ? securities.length : parseInt(value, 10));
+    setRowsPerPage(value === 'All Securities' ? filteredData.length : parseInt(value, 10));
     setPage(0); // Reset to first page
   };
-  const paginatedData = rowsPerPage === securities.length
-    ? sortedData
-    : sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  const paginatedData = rowsPerPage === filteredData.length
+    ? filteredData
+    : filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   // Trend Display Toggle
   const toggleTrendDisplay = () => setIsPercentage(!isPercentage);
 
-  // Rendering
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h4" align="center" gutterBottom>
         Security List
       </Typography>
+
+      {/* Search Bar */}
+      <TextField
+        label="Search"
+        variant="outlined"
+        fullWidth
+        value={searchQuery}
+        onChange={handleSearchChange}
+        sx={{ mb: 3 }}
+      />
+
       <TableContainer component={Paper} sx={{ boxShadow: 3, borderRadius: 2 }}>
         <Table>
           <TableHead>
@@ -113,7 +138,7 @@ const HomePage = () => {
                   fontWeight: 'bold',
                   cursor: 'pointer',
                   backgroundColor: '#f2f2f2',
-                  color: '#6a0dad', 
+                  color: '#6a0dad',
                 }}
               >
                 Symbol {getSortIndicator('ticker')}
@@ -181,7 +206,7 @@ const HomePage = () => {
               >
                 <TableCell
                   sx={{
-                    color: '#6a0dad', 
+                    color: '#6a0dad',
                     fontWeight: 'bold',
                   }}
                 >
@@ -194,11 +219,11 @@ const HomePage = () => {
                   sx={{
                     backgroundColor: getTrendColor(security.trend),
                     textAlign: 'center',
-                    fontWeight: 'bold', 
+                    fontWeight: 'bold',
                   }}
                 >
                   {isPercentage
-                    ? `${(security.trend * 100).toFixed(1)}%` // Show trend as percentage
+                    ? `${(security.trend * 100).toFixed(1)}%`
                     : security.trend}
                 </TableCell>
               </TableRow>
@@ -206,10 +231,11 @@ const HomePage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
       <TablePagination
         rowsPerPageOptions={[5, 10, { value: 'All Securities', label: 'All Securities' }]}
         component="div"
-        count={securities.length}
+        count={filteredData.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
