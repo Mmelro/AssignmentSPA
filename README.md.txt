@@ -60,7 +60,8 @@ ADDITIONAL FUNCTIONALITIES:
 Added sorting functionality for each column in the tables.
 Implemented pagination for the tables.
 Added the option to toggle the trend values between raw numbers and percentages.
-Introduced a search bar for the security list table, allowing searches across all columns, working well with the sorting functionality
+Introduced a search bar for the security list table, allowing searches across all columns, working well with the sorting functionality.
+added some icons and flags to embellish the SPA.
 
 
 NOTE: There are some vulnerabilities when running npm install on the frontend. I tried to resolve them, but when using npm audit fix, nothing changed. 

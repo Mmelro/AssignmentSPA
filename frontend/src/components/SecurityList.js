@@ -186,14 +186,23 @@ const HomePage = () => {
 
       {/* Search Bar */}
       <TextField
-      label="Search"
-      variant="outlined"
-      fullWidth
-      value={searchQuery}
-      onChange={handleSearchChange}
-      sx={{ mb: 3 }}
+  label="Search"
+  variant="outlined"
+  fullWidth
+  value={searchQuery}
+  onChange={handleSearchChange}
+  sx={{ mb: 3 }}
+  InputProps={{
+    endAdornment: (
+      <InputAdornment position="end">
+        <IconButton onClick={clearSearch} edge="end" aria-label="clear search">
+          <ClearIcon />
+        </IconButton>
+      </InputAdornment>
+    ),
+  }}
+/>
 
-    />
 
 
       <TableContainer component={Paper} sx={{ boxShadow: 3, borderRadius: 2 }}>
