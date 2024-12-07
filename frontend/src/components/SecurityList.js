@@ -46,61 +46,66 @@ const HomePage = () => {
   const handleSearchChange = (event) => {
     const query = event.target.value.toLowerCase();
     setSearchQuery(query);
-
+  
     const filtered = securities.filter((security) =>
       Object.values(security).some((value) =>
         value.toString().toLowerCase().includes(query)
       )
     );
-
-    setBaseData(filtered); // Update the base data for search
-    setFilteredData(filtered); // Update the working data
-    setSortConfig({ key: null, direction: null }); // Reset sorting
-    setPage(0); // Reset pagination to the first page
-  };
-
-  const clearSearch = () => {
-    setSearchQuery('');
-    setBaseData(securities);
-    setFilteredData(securities);
-    setSortConfig({ key: null, direction: null });
-    setPage(0);
+  
+    setBaseData(filtered); // Store filtered results as the base
+    setFilteredData(filtered); // Display filtered results
+    setSortConfig({ key: null, direction: null }); // Reset sorting state
+    setPage(0); // Reset pagination
   };
   
 
+  const clearSearch = () => {
+    setSearchQuery('');
+    setBaseData(securities); // Restore baseData to the full dataset
+    setFilteredData(securities); // Restore filteredData to the full dataset
+    setSortConfig({ key: null, direction: null }); // Reset sorting state
+    setPage(0); // Reset pagination
+  };
+  
+  
+
   // Sorting Logic
- const handleSort = (key) => {
+  const handleSort = (key) => {
     const { direction } = sortConfig;
     let newDirection = 'asc';
-
+  
     if (sortConfig.key === key && direction === 'asc') {
       newDirection = 'desc';
     } else if (sortConfig.key === key && direction === 'desc') {
       newDirection = null; // Reset sorting
     }
-
+  
     setSortConfig({ key, direction: newDirection });
-
+  
+    const dataToSort = searchQuery ? [...baseData] : [...securities]; // Use correct base
+  
     if (!newDirection) {
-      setFilteredData([...baseData]); // Reset to current base data
+      setFilteredData(dataToSort); // Reset filteredData to the correct base
     } else {
       const sorted = [...filteredData].sort((a, b) => {
         const aValue = key === 'trend' ? parseFloat(a[key]) : a[key];
         const bValue = key === 'trend' ? parseFloat(b[key]) : b[key];
-
-        // Handle string comparison for non-numeric columns
+  
         if (typeof aValue === 'string' && typeof bValue === 'string') {
           return newDirection === 'asc'
             ? aValue.localeCompare(bValue)
             : bValue.localeCompare(aValue);
         }
-
-        // Numeric and date comparison
+  
         return newDirection === 'asc' ? aValue - bValue : bValue - aValue;
       });
+  
       setFilteredData(sorted);
     }
   };
+  
+  
   
   const getSortIndicator = (key) => {
     if (sortConfig.key === key) {
