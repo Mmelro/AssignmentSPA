@@ -11,6 +11,25 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 
+
+
+
+import Flag from 'react-world-flags'; // Import React World Flags
+import PowerIcon from '@mui/icons-material/Power'; // Utilities
+import ComputerIcon from '@mui/icons-material/Computer'; // Technology
+import FactoryIcon from '@mui/icons-material/Factory'; // Industrials
+import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety'; // Healthcare
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance'; // Financials
+import LocalGasStationIcon from '@mui/icons-material/LocalGasStation'; // Energy
+import WeekendIcon from '@mui/icons-material/Weekend'; // Consumer Cyclicals
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'; // Consumer Noncyclicals
+import BuildIcon from '@mui/icons-material/Build'; // Basic Materials
+
+
+
+
+
+
 const SecurityDetails = () => {
   // State Management
   const { ticker } = useParams();
@@ -46,6 +65,55 @@ const SecurityDetails = () => {
       });
   }, [ticker]);
 
+
+
+
+
+  //#region  ICONS AND FLAGS
+  const getCountryCode = (country) => {
+    switch (country.toLowerCase()) {
+      case 'united states':
+      case 'usa':
+        return 'US';
+      case 'china':
+        return 'CN';
+      case 'united kingdom':
+      case 'uk':
+        return 'GB';
+      default:
+        return 'UN'; // Unknown or default flag
+    }
+  };
+
+  const getSectorIcon = (sector) => {
+    switch (sector.toLowerCase()) {
+      case 'utilities':
+        return <PowerIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
+      case 'technology':
+        return <ComputerIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
+      case 'industrials':
+        return <FactoryIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
+      case 'healthcare':
+        return <HealthAndSafetyIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
+      case 'financials':
+        return <AccountBalanceIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
+      case 'energy':
+        return <LocalGasStationIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
+      case 'consumer cyclicals':
+        return <WeekendIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
+      case 'consumer non-cyclicals':
+        return <ShoppingCartIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
+      case 'basic materials':
+        return <BuildIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
+      default:
+        return null; // No icon for unknown sectors
+    }
+  };
+  
+
+  //#endregion
+
+  //#region SORTING AND PAGINATION LOGIC 
   // Sorting Logic
   const handleSort = (key) => {
     const { direction } = sortConfig;
@@ -86,6 +154,8 @@ const SecurityDetails = () => {
   };
   const paginatedData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  //#endregion
+
   // Chart Configuration 
   const chartOptions = {
     chart: { type: 'line' },
@@ -120,6 +190,7 @@ const SecurityDetails = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       {/* Back to Home Button */}
+      
       <Box sx={{ mb: 3 }}>
         <Button
           variant="contained"
@@ -132,16 +203,66 @@ const SecurityDetails = () => {
       </Box>
 
       {/* Security Details */}
-      <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold', color: '#333', mb: 2 }}>
-        {security.security.security_name} ({security.security.ticker})
-      </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#f4f3ee', // Lighter background
+          color: '#333', // Dark text
+          px: 4,
+          py: 2,
+          borderRadius: 2,
+          boxShadow: 3,
+          mb: 4,
+        }}
+      >
+        {/* Country Flag */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 55, // Adjust width to better fit the rectangular flag
+            height: 50, // Adjust height to match flag aspect ratio
+            overflow: 'hidden',
+            mr: 2,
+            boxShadow: 'none', // Remove any shadow
+            border: 'none', // Ensure no border is visible
+          }}
+        >
+          <Flag
+            code={getCountryCode(security.security.country)}
+            alt={security.security.country}
+            style={{ width: '100%', height: '100%' }}
+          />
+        </Box>
+
+
+        {/* Title */}
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 'bold',
+            fontFamily: 'Poppins, sans-serif',
+            letterSpacing: 1.2,
+            textAlign: 'center',
+          }}
+        >
+          {security.security.security_name} ({security.security.ticker})
+        </Typography>
+      </Box>
       <hr style={{ border: '1px solid #ccc', marginBottom: '20px' }} />
 
+      {/* Sector */}
       <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
         <strong>Sector: </strong>
-        <span style={{ fontWeight: 'normal', color: '#555' }}>{security.security.sector}</span>
+        <span style={{ fontWeight: 'normal', color: '#555' }}>
+          {security.security.sector} {getSectorIcon(security.security.sector)}
+        </span>
       </Typography>
 
+      {/* Country */}
       <Typography variant="h6" gutterBottom>
         <strong>Country: </strong>
         <span style={{ fontWeight: 'normal', color: '#555' }}>

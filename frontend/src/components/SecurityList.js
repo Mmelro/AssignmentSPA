@@ -16,8 +16,11 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  Box,
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
+import BarChartIcon from '@mui/icons-material/BarChart';
+
 
 
 
@@ -115,9 +118,9 @@ const HomePage = () => {
   };
 
   const getTrendColor = (trend) => {
-    if (trend < -0.2) return '#ffcccc';
-    if (trend >= -0.2 && trend <= 0.2) return '#ccffcc';
-    return '#cce5ff';
+    if (trend < -0.2) return '#ffcccc'; // soft red
+    if (trend >= -0.2 && trend <= 0.2) return '#ccffcc'; // soft green
+    return '#cce5ff'; // soft blue
   };
 
   // Pagination Logic
@@ -138,14 +141,47 @@ const HomePage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Typography
-        variant="h4"
-        align="center"
-        gutterBottom
-        sx={{ fontWeight: 'bold', color: '#333', mb: 2 }}
-      >
-        Security List
-      </Typography>
+      <Box 
+  display="flex" 
+  alignItems="center" 
+  justifyContent="center" 
+  sx={{ mb: 4 }}
+>
+  <Box
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      backgroundColor: '#1E88E5', 
+      color: '#fff',
+      px: 3,
+      py: 1,
+      borderRadius: '12px',
+      boxShadow: 3,
+    }}
+  >
+    {/* Icon */}
+    <BarChartIcon sx={{ fontSize: 40, color: '#FFD700', mr: 2 }} />
+
+    {/* Text */}
+    <Typography
+      variant="h4"
+      sx={{
+        fontWeight: 'bold',
+        fontFamily: 'Poppins, sans-serif',
+        letterSpacing: 1.5,
+        fontSize: '2rem',
+        display: 'flex',
+        alignItems: 'center',
+        color:'white'
+      }}
+    >
+      Security
+      <span style={{  color: '#FFD700', marginLeft: '0.5rem' }}>List</span>
+    </Typography>
+  </Box>
+</Box>
+
+
       <hr style={{ border: '1px solid #ccc', marginBottom: '20px' }} />
 
       {/* Search Bar */}
@@ -156,15 +192,7 @@ const HomePage = () => {
       value={searchQuery}
       onChange={handleSearchChange}
       sx={{ mb: 3 }}
-      InputProps={{
-        endAdornment: (
-          <InputAdornment position="end">
-            <IconButton onClick={clearSearch} edge="end" aria-label="clear search">
-              <ClearIcon />
-            </IconButton>
-          </InputAdornment>
-        ),
-      }}
+
     />
 
 
@@ -273,15 +301,16 @@ const HomePage = () => {
       </TableContainer>
 
       <TablePagination
-        rowsPerPageOptions={[5, 10, { value: 'All Securities', label: 'All Securities' }]}
-        component="div"
-        count={filteredData.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        sx={{ mt: 2, justifyContent: 'flex-end' }}
-      />
+  rowsPerPageOptions={[5, 10, securities.length]} // Dynamically set the third option as total number of securities
+  component="div"
+  count={filteredData.length}
+  rowsPerPage={rowsPerPage}
+  page={page}
+  onPageChange={handleChangePage}
+  onRowsPerPageChange={handleChangeRowsPerPage}
+  sx={{ mt: 2, justifyContent: 'flex-end' }}
+/>
+
     </Container>
   );
 };
