@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
@@ -11,27 +11,45 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 
-
-
-
-import Flag from 'react-world-flags'; // Import React World Flags
-import PowerIcon from '@mui/icons-material/Power'; // Utilities
-import ComputerIcon from '@mui/icons-material/Computer'; // Technology
-import FactoryIcon from '@mui/icons-material/Factory'; // Industrials
-import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety'; // Healthcare
+import Flag from 'react-world-flags';
+import PowerIcon from '@mui/icons-material/Power';
+import ComputerIcon from '@mui/icons-material/Computer';
+import FactoryIcon from '@mui/icons-material/Factory';
+import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import OfflineBoltIcon from '@mui/icons-material/OfflineBolt';
-import WeekendIcon from '@mui/icons-material/Weekend'; // Consumer Cyclicals
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'; // Consumer Noncyclicals
-import BuildIcon from '@mui/icons-material/Build'; // Basic Materials
+import WeekendIcon from '@mui/icons-material/Weekend';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import BuildIcon from '@mui/icons-material/Build';
 
+//#region HELPER FUNCTIONS
+const sectorIcons = {
+  utilities: <PowerIcon sx={{ ml: 1, color: '#1E88E5' }} />,
+  technology: <ComputerIcon sx={{ ml: 1, color: '#1E88E5' }} />,
+  industrials: <FactoryIcon sx={{ ml: 1, color: '#1E88E5' }} />,
+  healthcare: <HealthAndSafetyIcon sx={{ ml: 1, color: '#1E88E5' }} />,
+  financials: <ShowChartIcon sx={{ ml: 1, color: '#1E88E5' }} />,
+  energy: <OfflineBoltIcon sx={{ ml: 1, color: '#1E88E5' }} />,
+  'consumer cyclicals': <WeekendIcon sx={{ ml: 1, color: '#1E88E5' }} />,
+  'consumer non-cyclicals': <ShoppingCartIcon sx={{ ml: 1, color: '#1E88E5' }} />,
+  'basic materials': <BuildIcon sx={{ ml: 1, color: '#1E88E5' }} />,
+};
 
+// Country Code Map
+const countryMap = {
+  'united states': 'US',
+  usa: 'US',
+  china: 'CN',
+  'united kingdom': 'GB',
+  uk: 'GB',
+};
 
+const getCountryCode = (country) => countryMap[country.toLowerCase()] || 'UN';
 
+//#endregion
 
 
 const SecurityDetails = () => {
-  // State Management
   const { ticker } = useParams();
   const navigate = useNavigate();
   const [security, setSecurity] = useState(null);
@@ -43,7 +61,7 @@ const SecurityDetails = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  // API Calls
+  // Fetch data on mount
   useEffect(() => {
     axios.get(`http://localhost:4000/api/securities/${ticker}`)
       .then(({ data }) => {
@@ -65,57 +83,9 @@ const SecurityDetails = () => {
       });
   }, [ticker]);
 
-
-
-
-
-  //#region  ICONS AND FLAGS
-  const getCountryCode = (country) => {
-    switch (country.toLowerCase()) {
-      case 'united states':
-      case 'usa':
-        return 'US';
-      case 'china':
-        return 'CN';
-      case 'united kingdom':
-      case 'uk':
-        return 'GB';
-      default:
-        return 'UN'; // Unknown or default flag
-    }
-  };
-
-  const getSectorIcon = (sector) => {
-    switch (sector.toLowerCase()) {
-      case 'utilities':
-        return <PowerIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
-      case 'technology':
-        return <ComputerIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
-      case 'industrials':
-        return <FactoryIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
-      case 'healthcare':
-        return <HealthAndSafetyIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
-      case 'financials':
-        return <ShowChartIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
-      case 'energy':
-        return <OfflineBoltIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
-      case 'consumer cyclicals':
-        return <WeekendIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
-      case 'consumer non-cyclicals':
-        return <ShoppingCartIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
-      case 'basic materials':
-        return <BuildIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
-      default:
-        return null; // No icon for unknown sectors
-    }
-  };
+  //#region SORTING LOGIC
   
-
-  //#endregion
-
-  //#region SORTING AND PAGINATION LOGIC 
-  // Sorting Logic
-  const handleSort = (key) => {
+  const handleSort = useCallback((key) => {
     const { direction } = sortConfig;
     let newDirection = 'asc';
 
@@ -137,7 +107,7 @@ const SecurityDetails = () => {
       });
       setSortedData(sorted);
     }
-  };
+  }, [sortConfig, sortedData, security?.prices]);
 
   const getSortIndicator = (key) => {
     if (sortConfig.key === key) {
@@ -146,18 +116,26 @@ const SecurityDetails = () => {
     return '';
   };
 
-  // Pagination Logic
-  const handleChangePage = (event, newPage) => setPage(newPage);
-  const handleChangeRowsPerPage = (event) => {
+  //#endregion
+
+  //#region PAGINATION LOGIC
+ 
+  const handleChangePage = useCallback((event, newPage) => setPage(newPage), []);
+  const handleChangeRowsPerPage = useCallback((event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0); // Reset to first page
-  };
-  const paginatedData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  }, []);
+
+    //NOTE: useMemo is now used to ensure data is not recalculated unnecessarily
+  const paginatedData = useMemo(() => {
+    return sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+  }, [sortedData, page, rowsPerPage]);
 
   //#endregion
 
-  // Chart Configuration 
-  const chartOptions = {
+  //#region CHART CONFIGURATION
+  
+  const chartOptions = useMemo(() => ({
     chart: { type: 'line' },
     title: { text: `Price and Volume Over Time for ${security?.security?.security_name || ''}` },
     xAxis: { title: { text: 'Date' }, type: 'datetime' },
@@ -181,16 +159,17 @@ const SecurityDetails = () => {
         `;
       },
     },
-  };
+  }), [priceData, volumeData, security?.security?.security_name]);
 
-  // Rendering
+  //#endregion
+  
+  
   if (loading) return <div>Loading...</div>;
   if (!security) return <div>Security not found</div>;
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       {/* Back to Home Button */}
-      
       <Box sx={{ mb: 3 }}>
         <Button
           variant="contained"
@@ -203,34 +182,16 @@ const SecurityDetails = () => {
       </Box>
 
       {/* Security Details */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#f4f3ee', // Lighter background
-          color: '#333', // Dark text
-          px: 4,
-          py: 2,
-          borderRadius: 2,
-          boxShadow: 3,
-          mb: 4,
-        }}
-      >
+      <Box sx={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backgroundColor: '#f4f3ee', color: '#333', px: 4, py: 2,
+        borderRadius: 2, boxShadow: 3, mb: 4,
+      }}>
         {/* Country Flag */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 55, // Adjust width to better fit the rectangular flag
-            height: 50, // Adjust height to match flag aspect ratio
-            overflow: 'hidden',
-            mr: 2,
-            boxShadow: 'none', // Remove any shadow
-            border: 'none', // Ensure no border is visible
-          }}
-        >
+        <Box sx={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 55, height: 50, overflow: 'hidden', mr: 2, boxShadow: 'none', border: 'none',
+        }}>
           <Flag
             code={getCountryCode(security.security.country)}
             alt={security.security.country}
@@ -238,74 +199,58 @@ const SecurityDetails = () => {
           />
         </Box>
 
-
         {/* Title */}
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 'bold',
-            fontFamily: 'Poppins, sans-serif',
-            letterSpacing: 1.2,
-            textAlign: 'center',
-          }}
-        >
+        <Typography variant="h4" sx={{
+          fontWeight: 'bold', fontFamily: 'Poppins, sans-serif', letterSpacing: 1.2, textAlign: 'center',
+        }}>
           {security.security.security_name} ({security.security.ticker})
         </Typography>
       </Box>
+
       <hr style={{ border: '1px solid #ccc', marginBottom: '20px' }} />
 
       {/* Sector */}
       <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
         <strong>Sector: </strong>
         <span style={{ fontWeight: 'normal', color: '#555' }}>
-          {security.security.sector} {getSectorIcon(security.security.sector)}
+          {security.security.sector} {sectorIcons[security.security.sector.toLowerCase()]}
         </span>
       </Typography>
 
       {/* Country */}
       <Typography variant="h6" gutterBottom>
         <strong>Country: </strong>
-        <span style={{ fontWeight: 'normal', color: '#555' }}>
-          {security.security.country}
-        </span>
+        <span style={{ fontWeight: 'normal' }}>{security.security.country}</span>
       </Typography>
 
       {/* Chart */}
       <HighchartsReact highcharts={Highcharts} options={chartOptions} />
 
-      {/* Price History Table */}
-      <Typography variant="h5" sx={{ mt: 4 }}>
-        Price History
+      {/* Security Data table */}
+      <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+        <strong>Historical Data: </strong>
       </Typography>
-      <table style={{ width: '100%', textAlign: 'center', marginTop: '1rem', borderCollapse: 'collapse' }}>
+
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
-            <th
-              onClick={() => handleSort('date')}
-              style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd' }}
-            >
+            <th onClick={() => handleSort('date')} style={{ cursor: 'pointer' }}>
               Date {getSortIndicator('date')}
             </th>
-            <th
-              onClick={() => handleSort('close_price')}
-              style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd' }}
-            >
-              Close (price) {getSortIndicator('close_price')}
+            <th onClick={() => handleSort('close_price')} style={{ cursor: 'pointer' }}>
+              Close Price {getSortIndicator('close_price')}
             </th>
-            <th
-              onClick={() => handleSort('volume')}
-              style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd' }}
-            >
+            <th onClick={() => handleSort('volume')} style={{ cursor: 'pointer' }}>
               Volume {getSortIndicator('volume')}
             </th>
           </tr>
         </thead>
         <tbody>
-          {paginatedData.map((price, index) => (
+          {paginatedData.map((row, index) => (
             <tr key={index}>
-              <td>{price.date}</td>
-              <td>{price.close_price}</td>
-              <td>{price.volume}</td>
+              <td>{new Date(row.date).toLocaleDateString()}</td>
+              <td>{parseFloat(row.close_price).toFixed(2)}</td>
+              <td>{parseInt(row.volume, 10).toLocaleString()}</td>
             </tr>
           ))}
         </tbody>
@@ -321,6 +266,8 @@ const SecurityDetails = () => {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
+
+
     </Container>
   );
 };

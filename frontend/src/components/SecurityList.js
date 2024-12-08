@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -29,61 +29,64 @@ const HomePage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
-  const [filteredData, setFilteredData] = useState([]); // Filtered data for search
-  const [baseData, setBaseData] = useState([]); // Base data for current search results
+  const [filteredData, setFilteredData] = useState([]);
+  const [baseData, setBaseData] = useState([]);
 
   useEffect(() => {
     axios.get('http://localhost:4000/api/securities')
       .then(({ data }) => {
         setSecurities(data);
-        setFilteredData(data); // Initialize filtered data
+        setFilteredData(data);
       })
       .catch((err) => console.error('Error fetching securities:', err));
   }, []);
 
-  // Handle search query change
-  const handleSearchChange = (event) => {
+  const getTrendColor = useCallback((trend) => {
+    if (trend < -0.2) return '#ffcccc'; // soft red
+    if (trend >= -0.2 && trend <= 0.2) return '#ccffcc'; // soft green
+    return '#cce5ff'; // soft blue
+  }, []);
+
+  //#region SEARCH BAR HANDLING
+  // (NOTE: useCallback is used in order to prevent re-renders on functions)
+  const handleSearchChange = useCallback((event) => {
     const query = event.target.value.toLowerCase();
     setSearchQuery(query);
 
-    // Filter the securities based on search query
     const filtered = securities.filter((security) =>
       Object.values(security).some((value) =>
         value.toString().toLowerCase().includes(query)
       )
     );
 
-    setBaseData(filtered); // Store filtered results as the base
-    setFilteredData(filtered); // Update the displayed filtered data
-    setSortConfig({ key: null, direction: null }); // Reset sorting state
-    setPage(0); // Reset pagination to first page
-  };
+    setBaseData(filtered);
+    setFilteredData(filtered);
+    setSortConfig({ key: null, direction: null });
+    setPage(0);
+  }, [securities]);
 
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
     setSearchQuery('');
-    setBaseData(securities); // Restore baseData to the full dataset
-    setFilteredData(securities); // Restore filteredData to the full dataset
-    setSortConfig({ key: null, direction: null }); // Reset sorting state
-    setPage(0); // Reset pagination
-  };
+    setBaseData(securities);
+    setFilteredData(securities);
+    setSortConfig({ key: null, direction: null });
+    setPage(0);
+  }, [securities]);
 
-  // Sorting Logic
-  const handleSort = (key) => {
+  //#endregion
+
+  //#region SORTING
+  // Sorting
+  const handleSort = useCallback((key) => {
     const { direction } = sortConfig;
-    let newDirection = 'asc';
-
-    if (sortConfig.key === key && direction === 'asc') {
-      newDirection = 'desc';
-    } else if (sortConfig.key === key && direction === 'desc') {
-      newDirection = null; // Reset sorting
-    }
+    const newDirection = direction === 'asc' ? 'desc' : direction === 'desc' ? null : 'asc';
 
     setSortConfig({ key, direction: newDirection });
 
-    const dataToSort = searchQuery ? [...baseData] : [...securities]; // Use correct base
+    const dataToSort = searchQuery ? [...baseData] : [...securities];
 
     if (!newDirection) {
-      setFilteredData(dataToSort); // Reset filteredData to the correct base
+      setFilteredData(dataToSort);
     } else {
       const sorted = [...filteredData].sort((a, b) => {
         const aValue = key === 'trend' ? parseFloat(a[key]) : a[key];
@@ -100,62 +103,48 @@ const HomePage = () => {
 
       setFilteredData(sorted);
     }
-  };
+  }, [baseData, filteredData, searchQuery, securities, sortConfig]);
 
-  const getSortIndicator = (key) => {
+  const getSortIndicator = useCallback((key) => {
     if (sortConfig.key === key) {
       return sortConfig.direction === 'asc' ? '↑' : sortConfig.direction === 'desc' ? '↓' : '';
     }
     return '';
-  };
+  }, [sortConfig]);
 
-  const getTrendColor = (trend) => {
-    if (trend < -0.2) return '#ffcccc'; // soft red
-    if (trend >= -0.2 && trend <= 0.2) return '#ccffcc'; // soft green
-    return '#cce5ff'; // soft blue
-  };
+  //#endregion
 
-  // Pagination Logic
-  const handleChangePage = (event, newPage) => setPage(newPage); // Update to the new page
-
+  //#region PAGINATION
+  // Pagination
+  const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
-    const value = parseInt(event.target.value, 10); // Parse the selected rows per page value
-    setRowsPerPage(value); // Update rowsPerPage
-    setPage(0); // Reset to the first page
+    const value = parseInt(event.target.value, 10);
+    setRowsPerPage(value);
+    setPage(0);
   };
 
-  // Define dynamic rows per page options
   const getRowsPerPageOptions = () => {
-    let options = [5]; // Always include 5 as an option
-  
+    let options = [5];
     if (filteredData.length <= 5) {
-      // If filtered rows are less than or equal to 5, show only the filtered rows as an option
       options = [filteredData.length];
     } else if (filteredData.length <= 10) {
-      // If filtered rows are between 6 and 10, show 5 and the number of filtered rows
       options = [5, filteredData.length];
     } else {
-      // If filtered rows are greater than 10, show 5, 10, and the number of filtered rows
       options = [5, 10, filteredData.length];
     }
-  
     return options;
   };
 
-  // Render paginated data
-  const paginatedData = filteredData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
+  const paginatedData = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  //#endregion
+
+  
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Box display="flex" alignItems="center" justifyContent="center" sx={{ mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', backgroundColor: '#1E88E5', color: '#fff', px: 3, py: 1, borderRadius: '12px', boxShadow: 3 }}>
-          {/* Icon */}
           <BarChartIcon sx={{ fontSize: 40, color: '#FFD700', mr: 2 }} />
-
-          {/* Text */}
           <Typography variant="h4" sx={{ fontWeight: 'bold', fontFamily: 'Poppins, sans-serif', letterSpacing: 1.5, fontSize: '2rem', display: 'flex', alignItems: 'center', color: 'white' }}>
             Security
             <span style={{ color: '#FFD700', marginLeft: '0.5rem' }}>List</span>
@@ -165,7 +154,6 @@ const HomePage = () => {
 
       <hr style={{ border: '1px solid #ccc', marginBottom: '20px' }} />
 
-      {/* Search Bar */}
       <TextField
         label="Search"
         variant="outlined"
@@ -227,15 +215,15 @@ const HomePage = () => {
       </TableContainer>
 
       <TablePagination
-  rowsPerPageOptions={getRowsPerPageOptions()} // Dynamically set rows per page options
-  component="div"
-  count={filteredData.length} // Total count of filtered data
-  rowsPerPage={rowsPerPage} // Rows per page
-  page={page} // Current page
-  onPageChange={handleChangePage} // Handle page changes
-  onRowsPerPageChange={handleChangeRowsPerPage} // Handle rows per page changes
-  sx={{ mt: 2, justifyContent: 'flex-end' }}
-/>
+        rowsPerPageOptions={getRowsPerPageOptions()}
+        component="div"
+        count={filteredData.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        sx={{ mt: 2, justifyContent: 'flex-end' }}
+      />
     </Container>
   );
 };
