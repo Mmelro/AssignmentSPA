@@ -47,12 +47,12 @@ const initDB = async () => {
       );
       CREATE TABLE prices (
         id SERIAL PRIMARY KEY,
-        ticker VARCHAR(10) REFERENCES securities(ticker) ON DELETE CASCADE,
+        ticker VARCHAR(10) REFERENCES securities(ticker) ON DELETE CASCADE, 
         date DATE NOT NULL,
         close_price NUMERIC(10, 2),
         volume BIGINT
       );
-    `);
+    `); //  "ON DELETE CASCADE"  this decision was just for scalability, even though the api doesnt handle deletes at the moment
     console.log('Tables created successfully.');
 
     //Seed data
@@ -63,7 +63,7 @@ const initDB = async () => {
       // Insert values into `securities` table
       await dbPool.query(
         'INSERT INTO securities (ticker, security_name, sector, country, trend) VALUES ($1, $2, $3, $4, $5)',
-        [ticker, securityName, sector, country, trend]
+        [ticker, securityName, sector, country, trend] // Parameterized queries like "VALUES ($1, $2, $3, $4, $5)" are to prevent sql injection
       );
 
       // Insert values into `prices` table
@@ -79,7 +79,7 @@ const initDB = async () => {
   } catch (error) {
     console.error('Error initializing the database:', error);
   } finally {
-    // Step 5: Close connections
+    // Close connections
     await pool.end(); // Close `postgres` connection
     if (dbPool) await dbPool.end(); // Close `securities_db` connection
   }

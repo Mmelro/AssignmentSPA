@@ -11,7 +11,8 @@ const getAllSecurities = async () => {
         country, 
         trend
       FROM securities
-    `);
+    `); // chose to not use the query 'SELECT * FROM securities' for scalability purposes, 
+        // if new columns are added to the securities table, this query would not work as desired.
   
     return result.rows;
   } catch (err) {

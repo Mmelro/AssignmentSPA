@@ -19,8 +19,8 @@ import PowerIcon from '@mui/icons-material/Power'; // Utilities
 import ComputerIcon from '@mui/icons-material/Computer'; // Technology
 import FactoryIcon from '@mui/icons-material/Factory'; // Industrials
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety'; // Healthcare
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance'; // Financials
-import LocalGasStationIcon from '@mui/icons-material/LocalGasStation'; // Energy
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import OfflineBoltIcon from '@mui/icons-material/OfflineBolt';
 import WeekendIcon from '@mui/icons-material/Weekend'; // Consumer Cyclicals
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'; // Consumer Noncyclicals
 import BuildIcon from '@mui/icons-material/Build'; // Basic Materials
@@ -96,9 +96,9 @@ const SecurityDetails = () => {
       case 'healthcare':
         return <HealthAndSafetyIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
       case 'financials':
-        return <AccountBalanceIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
+        return <ShowChartIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
       case 'energy':
-        return <LocalGasStationIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
+        return <OfflineBoltIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
       case 'consumer cyclicals':
         return <WeekendIcon sx={{ ml: 1, color: '#1E88E5', verticalAlign: 'middle' }} />;
       case 'consumer non-cyclicals':

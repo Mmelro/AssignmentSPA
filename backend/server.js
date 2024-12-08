@@ -1,5 +1,5 @@
 const express = require('express');
-const cors = require('cors'); // Import cors, because i was being blocked by cors policy, as my server port is 4000 and web page is port 3000
+const cors = require('cors'); // Import cors, because i was being blocked by cors policy
 
 const app = express();
 const port = 4000;
