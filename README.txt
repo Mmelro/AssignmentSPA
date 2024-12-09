@@ -17,12 +17,12 @@ git clone https://github.com/Mmelro/AssignmentEngineAI.git
 
 cd AssignmentEngineAI
 
-
+NOTE: you will need to configure your .env file. Inside the backend folder, you will se an example of what your .env file should look like. You just have to insert your database access credentials.
 
 API
 
 
-Install dependencies for the backend – Inside the project folder, run the following commands:
+Install the dependencies for the backend – Inside the project folder, run the following commands:
 
 cd backend
 npm install
